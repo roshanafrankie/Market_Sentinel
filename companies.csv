@@ -1,0 +1,22 @@
+ticker,name,sector
+AAPL,Apple,Technology
+MSFT,Microsoft,Technology
+NVDA,Nvidia,Semiconductors
+TSLA,Tesla,Automotive
+INTC,Intel,Semiconductors
+JPM,JP Morgan,Finance
+AMZN,Amazon,Consumer Discretionary
+BB,BlackBerry,Technology
+HD,Home Depot,Retail
+GS,Goldman Sachs,Finance
+META,Meta,Technology
+ABF.L,Primark,Retail
+GOOGL,Google,Technology
+AMD,AMD,Semiconductors
+NFLX,Netflix,Communication Services
+V,Visa,Finance
+BAC,Bank of America,Finance
+DIS,Disney,Entertainment
+WMT,Walmart,Retail
+COST,Costco,Retail
+IBM,IBM,Technology

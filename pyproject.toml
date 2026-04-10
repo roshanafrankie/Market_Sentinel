@@ -1,0 +1,16 @@
+[project]
+name = "cse-pipeline"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mysql-connector-python>=9.6.0",
+    "plotly>=6.7.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
+    "scipy>=1.17.1",
+    "streamlit>=1.56.0",
+    "vadersentiment>=3.3.2",
+    "yfinance>=1.2.1",
+]
