@@ -5,3 +5,4 @@ plotly
 python-dotenv
 requests
 yfinance
+vaderSentiment
