@@ -44,31 +44,36 @@ def get_data(query):
 # Note: Ensure logo.png is in your folder or this may show an error
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
-
 # --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* 1. HIDE FOOTER COMPLETELY */
-    /* This targets the entire footer area and the 'Made with Streamlit' badge */
-    footer {visibility: hidden; height: 0px;}
+    /* 1. HIDE THE HEADER BUTTONS (Fork, GitHub, etc.) */
+    /* Targets the specific container and the individual buttons */
+    [data-testid="stHeaderActionElements"], 
+    .st-emotion-cache-12fmjuu, 
+    .st-emotion-cache-15ec60f,
+    [data-testid="stHeader"] a {
+        display: none !important;
+    }
+    
+    /* 2. HIDE THE FOOTER & REDUCE BOTTOM GAP */
+    footer {visibility: hidden !important; height: 0px !important;}
     [data-testid="stFooter"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
-    
-    /* 2. HIDE GITHUB/FORK ICONS IN HEADER */
-    /* Targets any link containing 'github' and the specific header action icons */
-    [data-testid="stHeader"] a[href*="github.com"] {display: none !important;}
-    [data-testid="stHeaderActionElements"] {display: none !important;}
-    .stApp a[href*="github.com"] {display: none !important;}
-    
-    /* 3. CLEAN THE MAIN MENU (Hamburger) */
-    /* Hides the 'View Source' and user branding inside the menu pop-up */
-    [data-testid="stSidebarNav"] + div {display: none !important;}
-    div[data-testid="stConnectionStatus"] {display: none !important;}
-    
-    /* 4. KEEP THE MENU BUTTON VISIBLE */
-    #MainMenu {visibility: visible !important;}
 
-    /* 5. YOUR THEME STYLES */
+    /* 3. CLEAN UP THE HAMBURGER MENU */
+    /* Hides 'Manage app', 'View source', and 'Report a bug' */
+    ul[data-testid="main-menu-list"] li:nth-last-child(-n+3) {
+        display: none !important;
+    }
+    div[data-testid="stConnectionStatus"] {display: none !important;}
+    [data-testid="stSidebarNav"] + div {display: none !important;}
+
+    /* 4. KEEP THE MENU BUTTON BUT CLEAN THE HEADER */
+    #MainMenu { visibility: visible !important; }
+    header { background-color: rgba(0,0,0,0) !important; }
+
+    /* Your Theme Styles */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
