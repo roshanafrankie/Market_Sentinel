@@ -4,54 +4,111 @@ from decimal import Decimal
 import requests
 import yfinance as yf
 import mysql.connector
+from pathlib import Path
 from dotenv import load_dotenv
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import pandas as pd
 
 # 1. INITIAL CONFIGURATION
-load_dotenv()
+# Force Python to reload the .env file and overwrite any "localhost" ghosts in memory
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path, override=True)
+
 analyzer = SentimentIntensityAnalyzer()
 
-# Global Config - Shared across all functions
-MYSQL_CONFIG = {
-    "host": os.getenv("MYSQL_HOST", "localhost"),
-    "port": int(os.getenv("MYSQL_PORT", 3306)),
-    "user": os.getenv("MYSQL_USER", "root"),
-    "password": os.getenv("MYSQL_PASSWORD", ""), 
-    "database": os.getenv("MYSQL_DB", "cse_data"),
-}
-
+# Verify NewsData Key
 NEWSDATA_API_KEY = os.getenv("NEWSDATA_KEY")
 
-companies_df = pd.read_csv('companies.csv')
-WATCHLIST = companies_df['ticker'].tolist()
+# Load your local watchlist
+try:
+    companies_df = pd.read_csv('companies.csv')
+    WATCHLIST = companies_df['ticker'].tolist()
+except Exception as e:
+    print(f"❌ Error loading companies.csv: {e}")
+    WATCHLIST = []
 
 def get_mysql_connection():
+    """Fetches Aiven credentials directly from the environment and connects."""
+    host = os.getenv("MYSQL_HOST")
+    port = os.getenv("MYSQL_PORT")
+    user = os.getenv("MYSQL_USER")
+    password = os.getenv("MYSQL_PASSWORD")
+    db = os.getenv("MYSQL_DB")
+
     try:
-        return mysql.connector.connect(**MYSQL_CONFIG)
+        # This will help us debug if it's still trying to hit localhost
+        if host == "localhost" or host is None:
+            print(f"⚠️ Warning: Still detecting host as '{host}'. Check your .env file!")
+        
+        return mysql.connector.connect(
+            host=host,
+            port=int(port) if port else 3306,
+            user=user,
+            password=password,
+            database=db,
+            connect_timeout=10,
+            ssl_disabled=False # Required for Aiven Cloud
+        )
     except mysql.connector.Error as err:
         print(f"❌ DB Error: {err}")
         return None
 
-# 2. RESILIENT PRICE FETCHING
+def setup_database():
+    """Ensures the required tables exist in the Aiven cloud database."""
+    conn = get_mysql_connection()
+    if not conn: return
+    cursor = conn.cursor()
+    
+    print("🛠️ Verifying database tables in Aiven...")
+    
+    # Create Stock Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS stocks_daily (
+        symbol VARCHAR(10),
+        trade_date DATE,
+        close_price DECIMAL(15, 2),
+        PRIMARY KEY (symbol, trade_date)
+    )
+    """)
+    
+    # Create News Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS news (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        source VARCHAR(100),
+        title TEXT,
+        description TEXT,
+        url VARCHAR(500) UNIQUE,
+        published_at DATETIME,
+        sentiment_score DECIMAL(5, 4)
+    )
+    """)
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("✅ Database tables ready.")
+
+# 2. PRICE FETCHING LOGIC
 def fetch_daily_closes(tickers):
     results = []
     for symbol in tickers:
         print(f"🔍 Syncing Data for: {symbol}...")
-        ticker = yf.Ticker(symbol)
-
-        hist = ticker.history(period="1mo")
-        
-        if not hist.empty:
-            last_few_days = hist.tail(5) 
+        try:
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(period="1mo")
             
-            for date, row in last_few_days.iterrows():
-                results.append({
-                    "symbol": symbol,
-                    "trade_date": date.date(),
-                    "close_price": Decimal(str(row["Close"]))
-                })
-            print(f"   ✅ Data synced for {symbol}")
+            if not hist.empty:
+                last_few_days = hist.tail(5) 
+                for date, row in last_few_days.iterrows():
+                    results.append({
+                        "symbol": symbol,
+                        "trade_date": date.date(),
+                        "close_price": Decimal(str(row["Close"]))
+                    })
+                print(f"   ✅ Data synced for {symbol}")
+        except Exception as e:
+            print(f"   ⚠️ Could not fetch {symbol}: {e}")
     return results
 
 def save_daily_closes(rows):
@@ -79,7 +136,7 @@ def fetch_and_score_news(page_size=10):
     url = "https://newsdata.io/api/1/latest"
     params = {
         "apikey": NEWSDATA_API_KEY,
-        "q": "Apple AND (Stock OR Market OR AAPL)",
+        "q": "Stock Market OR Business News",
         "language": "en",
         "category": "business",
         "size": page_size
@@ -96,8 +153,6 @@ def fetch_and_score_news(page_size=10):
         for item in data.get("results", []):
             title = item.get("title", "")
             desc = item.get("description", "") or ""
-            
-            # AI Logic: Scoring the "vibe" of the news
             score = analyzer.polarity_scores(f"{title}. {desc}")['compound']
             
             articles.append({
@@ -130,17 +185,20 @@ def save_news(articles):
 
 # 4. MAIN ORCHESTRATOR
 def main():
-    print("--- 🚀 STARTING STOCK PIPELINE ---")
+    # Final check before starting
+    print(f"DEBUG: Using DB Host: {os.getenv('MYSQL_HOST')}")
+    print("--- 🚀 STARTING MARKET SENTINEL PIPELINE ---")
+    
+    # Step 0: Setup Cloud DB
+    setup_database()
     
     # Step 1: Stock Prices
     prices = fetch_daily_closes(WATCHLIST)
     save_daily_closes(prices)
-    print(f"✅ Prices updated: {len(prices)} companies.")
-
+    
     # Step 2: News Sentiment
     news = fetch_and_score_news(page_size=10)
     save_news(news)
-    print(f"✅ News analyzed: {len(news)} articles scored with AI.")
     
     print("--- 🏁 PIPELINE COMPLETE ---")
 
