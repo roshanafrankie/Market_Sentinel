@@ -46,8 +46,18 @@ def get_data(query):
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
 # --- 3. PREMIUM CSS ---
+# --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
+    /* Hide the Streamlit footer */
+    footer {visibility: hidden;}
+    
+    /* Hide the top-right 'Made with Streamlit' menu */
+    #MainMenu {visibility: hidden;}
+    
+    /* Hide the 'View Source' button in the header */
+    header {visibility: hidden;}
+
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
