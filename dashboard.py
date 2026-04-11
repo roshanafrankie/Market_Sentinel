@@ -45,33 +45,50 @@ def get_data(query):
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
 # --- 3. PREMIUM CSS ---
+# --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* 1. HIDE THE HEADER BUTTONS (Fork, GitHub, etc.) */
-    /* Targets the specific container and the individual buttons */
-    [data-testid="stHeaderActionElements"], 
-    .st-emotion-cache-12fmjuu, 
-    .st-emotion-cache-15ec60f,
-    [data-testid="stHeader"] a {
+    /* 1. HIDE THE ENTIRE HEADER TOOLBAR (GitHub, Fork, etc.) */
+    [data-testid="stHeader"] {
+        display: none !important;
+    }
+
+    /* 2. HIDE THE ENTIRE FOOTER AND LOGO */
+    footer {
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+    [data-testid="stFooter"] {
         display: none !important;
     }
     
-    /* 2. HIDE THE FOOTER & REDUCE BOTTOM GAP */
-    footer {visibility: hidden !important; height: 0px !important;}
-    [data-testid="stFooter"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
-
-    /* 3. CLEAN UP THE HAMBURGER MENU */
-    /* Hides 'Manage app', 'View source', and 'Report a bug' */
-    ul[data-testid="main-menu-list"] li:nth-last-child(-n+3) {
+    /* 3. TARGET THE FLOATING 'MADE WITH STREAMLIT' LOGO */
+    /* This catches the logo even if the class name changes */
+    div[class^="viewerBadge"] {
         display: none !important;
     }
-    div[data-testid="stConnectionStatus"] {display: none !important;}
-    [data-testid="stSidebarNav"] + div {display: none !important;}
 
-    /* 4. KEEP THE MENU BUTTON BUT CLEAN THE HEADER */
-    #MainMenu { visibility: visible !important; }
-    header { background-color: rgba(0,0,0,0) !important; }
+    /* 4. CLEAN THE SIDEBAR MENU (Keep only Theme/Settings) */
+    /* Hides 'Manage app', 'View source', and 'Report a bug' */
+    ul[data-testid="main-menu-list"] li:nth-last-child(-n+4) {
+        display: none !important;
+    }
+    div[data-testid="stConnectionStatus"] {
+        display: none !important;
+    }
+    [data-testid="stSidebarNav"] + div {
+        display: none !important;
+    }
+
+    /* 5. BRING BACK THE MENU BUTTON MANUALLY */
+    /* Since we hid the header, we move the menu button so you can still switch themes */
+    #MainMenu {
+        visibility: visible !important;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000000;
+    }
 
     /* Your Theme Styles */
     .stApp { background-color: transparent; }
