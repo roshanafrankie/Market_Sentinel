@@ -45,37 +45,39 @@ def get_data(query):
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
 
-# --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* 1. COMPLETELY HIDE FOOTER & BRANDING */
-    footer {visibility: hidden; height: 0px;}
-    .viewerBadge_container__1QSob {display: none !important;}
-    
-    /* 2. HIDE GITHUB ICON & PROFILE INFO */
-    /* This hides the GitHub link in the top right */
-    .stApp a[href*="github.com"] {display: none !important;}
-    
-    /* This hides the "Manage App" and "Created by" inside the sidebar menu */
-    [data-testid="stSidebarNav"] + div {display: none !important;}
-    
-    /* Hides the user profile/connection section at the bottom of the Main Menu pop-up */
-    div[data-testid="stConnectionStatus"] {display: none !important;}
-    
-    /* Hides the 'Report a bug' and 'View Source' specific items inside the menu */
-    /* This ensures you only see Settings, Print, and About */
-    div[data-testid="stStatusWidget"] {display: none !important;}
+    /* 1. HIDE THE ENTIRE BOTTOM BAR (Footer & Made with Streamlit) */
+    [data-testid="stStatusWidget"], footer, .viewerBadge_container__1QSob, .st-emotion-cache-zq5wms {
+        display: none !important;
+        visibility: hidden !important;
+    }
 
-    /* 3. YOUR THEME STYLES */
+    /* 2. HIDE GITHUB ICON & REPO LINKS */
+    /* Targets the GitHub icon in the header and any link to GitHub */
+    .stApp a[href*="github.com"], .stDeployButton, [data-testid="stHeader"] a {
+        display: none !important;
+    }
+
+    /* 3. CLEAN UP THE MAIN MENU POP-UP */
+    /* Hides 'Manage App', 'Created by', and the User Profile section */
+    div[data-testid="stConnectionStatus"], 
+    [data-testid="stSidebarNav"] + div, 
+    ul[data-testid="main-menu-list"] li:nth-child(4), /* Usually 'Report a bug' */
+    ul[data-testid="main-menu-list"] li:nth-child(5)  /* Usually 'View Source' */ {
+        display: none !important;
+    }
+
+    /* 4. KEEP THE MENU BUTTON BUT CLEAN THE HEADER */
+    #MainMenu { visibility: visible !important; }
+    
+    /* Your Theme Styles */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] span { color: white !important; }
     [data-testid="stMetricValue"] { font-size: 30px; font-weight: 700; }
-    
-    /* Keeps the Main Menu button visible for Dark/Light mode switching */
-    #MainMenu {visibility: visible;} 
     </style>
     """, unsafe_allow_html=True)
 
