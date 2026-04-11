@@ -41,29 +41,41 @@ def get_data(query):
         st.error(f"Database Connection Error: {e}")
         return pd.DataFrame()
 
-# --- 2. PAGE CONFIG ---
 # Note: Ensure logo.png is in your folder or this may show an error
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
-# --- 3. PREMIUM CSS ---
+
 # --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* Hide the Streamlit footer */
-    footer {visibility: hidden;}
+    /* 1. COMPLETELY HIDE FOOTER & BRANDING */
+    footer {visibility: hidden; height: 0px;}
+    .viewerBadge_container__1QSob {display: none !important;}
     
-    /* Hide the top-right 'Made with Streamlit' menu */
-    #MainMenu {visibility: hidden;}
+    /* 2. HIDE GITHUB ICON & PROFILE INFO */
+    /* This hides the GitHub link in the top right */
+    .stApp a[href*="github.com"] {display: none !important;}
     
-    /* Hide the 'View Source' button in the header */
-    header {visibility: hidden;}
+    /* This hides the "Manage App" and "Created by" inside the sidebar menu */
+    [data-testid="stSidebarNav"] + div {display: none !important;}
+    
+    /* Hides the user profile/connection section at the bottom of the Main Menu pop-up */
+    div[data-testid="stConnectionStatus"] {display: none !important;}
+    
+    /* Hides the 'Report a bug' and 'View Source' specific items inside the menu */
+    /* This ensures you only see Settings, Print, and About */
+    div[data-testid="stStatusWidget"] {display: none !important;}
 
+    /* 3. YOUR THEME STYLES */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] span { color: white !important; }
     [data-testid="stMetricValue"] { font-size: 30px; font-weight: 700; }
+    
+    /* Keeps the Main Menu button visible for Dark/Light mode switching */
+    #MainMenu {visibility: visible;} 
     </style>
     """, unsafe_allow_html=True)
 
