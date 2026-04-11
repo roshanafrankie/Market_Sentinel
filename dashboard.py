@@ -45,33 +45,30 @@ def get_data(query):
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
 
+# --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* 1. HIDE THE ENTIRE BOTTOM BAR (Footer & Made with Streamlit) */
-    [data-testid="stStatusWidget"], footer, .viewerBadge_container__1QSob, .st-emotion-cache-zq5wms {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    /* 2. HIDE GITHUB ICON & REPO LINKS */
-    /* Targets the GitHub icon in the header and any link to GitHub */
-    .stApp a[href*="github.com"], .stDeployButton, [data-testid="stHeader"] a {
-        display: none !important;
-    }
-
-    /* 3. CLEAN UP THE MAIN MENU POP-UP */
-    /* Hides 'Manage App', 'Created by', and the User Profile section */
-    div[data-testid="stConnectionStatus"], 
-    [data-testid="stSidebarNav"] + div, 
-    ul[data-testid="main-menu-list"] li:nth-child(4), /* Usually 'Report a bug' */
-    ul[data-testid="main-menu-list"] li:nth-child(5)  /* Usually 'View Source' */ {
-        display: none !important;
-    }
-
-    /* 4. KEEP THE MENU BUTTON BUT CLEAN THE HEADER */
-    #MainMenu { visibility: visible !important; }
+    /* 1. HIDE FOOTER COMPLETELY */
+    /* This targets the entire footer area and the 'Made with Streamlit' badge */
+    footer {visibility: hidden; height: 0px;}
+    [data-testid="stFooter"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
     
-    /* Your Theme Styles */
+    /* 2. HIDE GITHUB/FORK ICONS IN HEADER */
+    /* Targets any link containing 'github' and the specific header action icons */
+    [data-testid="stHeader"] a[href*="github.com"] {display: none !important;}
+    [data-testid="stHeaderActionElements"] {display: none !important;}
+    .stApp a[href*="github.com"] {display: none !important;}
+    
+    /* 3. CLEAN THE MAIN MENU (Hamburger) */
+    /* Hides the 'View Source' and user branding inside the menu pop-up */
+    [data-testid="stSidebarNav"] + div {display: none !important;}
+    div[data-testid="stConnectionStatus"] {display: none !important;}
+    
+    /* 4. KEEP THE MENU BUTTON VISIBLE */
+    #MainMenu {visibility: visible !important;}
+
+    /* 5. YOUR THEME STYLES */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
