@@ -9,9 +9,16 @@ from dotenv import load_dotenv
 
 # --- 1. INITIAL SETUP ---
 warnings.filterwarnings('ignore')
-
-# Use override=True to ensure cloud variables replace any local 'localhost' ghosts
 load_dotenv(override=True)
+
+# Define sentiment color function globally so both views can use it
+def apply_sentiment_style(val):
+    try:
+        score = float(val)
+        color = "#16a34a" if score > 0.05 else "#dc2626" if score < -0.05 else "#4b5563"
+        return f'color: {color}; font-weight: bold'
+    except:
+        return ''
 
 @st.cache_data
 def load_watchlist():
@@ -25,14 +32,13 @@ def load_watchlist():
 def get_data(query):
     """Securely connects to Aiven Cloud MySQL."""
     try:
-        # Fetching credentials directly inside the function for reliability
         conn = mysql.connector.connect(
             host=os.getenv("MYSQL_HOST"),
             port=int(os.getenv("MYSQL_PORT")) if os.getenv("MYSQL_PORT") else 20914,
             user=os.getenv("MYSQL_USER"),
             password=os.getenv("MYSQL_PASSWORD"),
             database=os.getenv("MYSQL_DB"),
-            ssl_disabled=False # REQUIRED for Aiven Cloud
+            ssl_disabled=False 
         )
         df = pd.read_sql(query, conn)
         conn.close()
@@ -41,41 +47,35 @@ def get_data(query):
         st.error(f"Database Connection Error: {e}")
         return pd.DataFrame()
 
-# Note: Ensure logo.png is in your folder or this may show an error
-st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
+# --- 2. PAGE CONFIG ---
+st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="📈")
 
-# --- 3. PREMIUM CSS ---
+# --- 3. PREMIUM CSS (Privacy Shield + Header/Switch Kept) ---
 st.markdown("""
     <style>
-    /* 1. HIDE THE FOOTER & THE FLOATING BADGE */
-    footer {visibility: hidden; height: 0px;}
+    /* 1. HIDE FOOTER & BRANDING BADGE */
+    footer {visibility: hidden !important; height: 0px !important;}
     [data-testid="stFooter"] {display: none !important;}
+    div[class^="viewerBadge"] {display: none !important;}
     
-    /* This targets the specific 'Made with Streamlit' floating button */
-    div[class^="st-emotion-cache-"] + div[class^="viewerBadge"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
-    [data-testid="stStatusWidget"] {display: none !important;}
-
-    /* 2. HIDE GITHUB & FORK BUTTONS (Keep Header for Menu) */
-    /* This hides the GitHub link and Fork button in the top right header */
+    /* 2. HIDE GITHUB & FORK LINKS ONLY (Keeps Header for Switch Mode) */
     [data-testid="stHeaderActionElements"] {display: none !important;}
-    .stApp a[href*="github.com"] {display: none !important;}
+    header a[href*="github"] {display: none !important;}
+    .stDeployButton {display:none !important;}
 
     /* 3. CLEAN UP THE HAMBURGER MENU */
-    /* Hides 'Manage app', 'View source', and 'Report a bug' sections */
     ul[data-testid="main-menu-list"] li:nth-last-child(-n+3) {display: none !important;}
     div[data-testid="stConnectionStatus"] {display: none !important;}
     [data-testid="stSidebarNav"] + div {display: none !important;}
 
-    /* 4. KEEP MENU VISIBLE FOR THEME SWITCHING */
+    /* 4. KEEP HEADER & MENU VISIBLE FOR THEME SWITCHING */
+    header {visibility: visible !important;}
     #MainMenu {visibility: visible !important;}
 
-    /* 5. YOUR THEME STYLES */
+    /* 5. THEME STYLES */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
-    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] span { color: white !important; }
+    [data-testid="stSidebar"] * { color: white !important; }
     [data-testid="stMetricValue"] { font-size: 30px; font-weight: 700; }
     </style>
     """, unsafe_allow_html=True)
@@ -134,10 +134,8 @@ if selected_view == "Global Overview":
         st.subheader("📰 Market Headlines")
         all_news = get_data("SELECT title, sentiment_score, source FROM news ORDER BY published_at DESC LIMIT 20")
         if not all_news.empty:
-            def style_sent(val): 
-                color = "#16a34a" if val > 0.05 else "#dc2626" if val < -0.05 else "#4b5563"
-                return f'color: {color}; font-weight: bold'
-            st.dataframe(all_news.style.map(style_sent, subset=['sentiment_score']), width='stretch', hide_index=True)
+            # APPLYING COLOR STYLE HERE
+            st.dataframe(all_news.style.map(apply_sentiment_style, subset=['sentiment_score']), width='stretch', hide_index=True)
         else:
             st.info("No news articles found in the database.")
 
@@ -148,18 +146,9 @@ else:
         stock_name = stock_info['name'].iloc[0]
         st.title(f"🔍 {stock_name} Intelligence")
 
-        # Subquery logic for MySQL compatibility
-        price_query = f"""
-            SELECT * FROM (
-                SELECT trade_date, close_price 
-                FROM stocks_daily 
-                WHERE symbol = '{selected_view}' 
-                ORDER BY trade_date DESC LIMIT 10
-            ) AS sub ORDER BY trade_date ASC
-        """
+        price_query = f"SELECT * FROM (SELECT trade_date, close_price FROM stocks_daily WHERE symbol = '{selected_view}' ORDER BY trade_date DESC LIMIT 10) AS sub ORDER BY trade_date ASC"
         price_data = get_data(price_query)
         
-        # KPIs
         if not price_data.empty:
             latest = price_data['close_price'].iloc[-1]
             delta = float(latest - price_data['close_price'].iloc[-2]) if len(price_data) > 1 else 0
@@ -177,40 +166,35 @@ else:
                 fig_line = px.line(price_data, x='trade_date', y='close_price', markers=True, line_shape='spline', color_discrete_sequence=['#4F46E5'])
                 st.plotly_chart(fig_line, width='stretch')
 
-        # --- NEWS & GAUGE ---
         st.divider()
         c1, c2 = st.columns([2, 1])
-        all_news = get_data(f"SELECT title, sentiment_score, source FROM news WHERE title LIKE '%{selected_view}%' OR title LIKE '%{stock_name}%' ORDER BY published_at DESC LIMIT 15")
+        ticker_news = get_data(f"SELECT title, sentiment_score, source FROM news WHERE title LIKE '%{selected_view}%' OR title LIKE '%{stock_name}%' ORDER BY published_at DESC LIMIT 15")
 
         with c1:
             with st.container(border=True):
                 st.subheader(f"📰 {selected_view} Headlines")
-                if not all_news.empty:
-                    st.dataframe(all_news, width='stretch', hide_index=True)
+                if not ticker_news.empty:
+                    # APPLYING COLOR STYLE HERE TOO
+                    st.dataframe(ticker_news.style.map(apply_sentiment_style, subset=['sentiment_score']), width='stretch', hide_index=True)
                 else:
                     st.info("No specific news found for this ticker.")
 
         with c2:
             with st.container(border=True):
                 st.subheader("📊 Sentiment Gauge")
-                if not all_news.empty:
+                if not ticker_news.empty:
                     fig_gauge = go.Figure(go.Indicator(
                         mode = "gauge+number",
                         value = avg_s,
-                        domain = {'x': [0, 1], 'y': [0, 1]},
-                        title = {'text': "Market Mood", 'font': {'size': 20}},
                         gauge = {
-                            'axis': {'range': [-1, 1], 'tickwidth': 1},
+                            'axis': {'range': [-1, 1]},
                             'bar': {'color': "#1e293b"},
                             'steps': [
                                 {'range': [-1, -0.05], 'color': "#ef4444"}, 
                                 {'range': [-0.05, 0.05], 'color': "#facc15"}, 
                                 {'range': [0.05, 1], 'color': "#22c55e"} 
-                            ],
-                            'threshold': {'line': {'color': "black", 'width': 4}, 'thickness': 0.75, 'value': avg_s}
+                            ]
                         }
                     ))
                     fig_gauge.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
                     st.plotly_chart(fig_gauge, width='stretch')
-                else:
-                    st.write("Insufficient data for gauge.")
