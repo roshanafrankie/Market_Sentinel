@@ -1,4 +1,4 @@
-# 🚀 Market Sentinel: AI-Powered Financial Intelligence
+# 🚀 Market Sentinel: AI Powered Financial Intelligence
 
 Market Sentinel is a professional grade financial dashboard that bridges the gap between raw market data and actionable insights. It monitors price movements and utilizes AI to read and score the global news sentiment for a customized watchlist of companies.
 
