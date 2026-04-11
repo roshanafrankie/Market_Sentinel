@@ -3,3 +3,5 @@ pandas
 mysql-connector-python
 plotly
 python-dotenv
+requests
+yfinance
