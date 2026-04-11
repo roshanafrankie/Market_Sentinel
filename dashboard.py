@@ -45,52 +45,32 @@ def get_data(query):
 st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.png")
 
 # --- 3. PREMIUM CSS ---
-# --- 3. PREMIUM CSS ---
 st.markdown("""
     <style>
-    /* 1. HIDE THE ENTIRE HEADER TOOLBAR (GitHub, Fork, etc.) */
-    [data-testid="stHeader"] {
-        display: none !important;
-    }
-
-    /* 2. HIDE THE ENTIRE FOOTER AND LOGO */
-    footer {
-        visibility: hidden !important;
-        height: 0px !important;
-    }
-    [data-testid="stFooter"] {
-        display: none !important;
-    }
+    /* 1. HIDE THE FOOTER & THE FLOATING BADGE */
+    footer {visibility: hidden; height: 0px;}
+    [data-testid="stFooter"] {display: none !important;}
     
-    /* 3. TARGET THE FLOATING 'MADE WITH STREAMLIT' LOGO */
-    /* This catches the logo even if the class name changes */
-    div[class^="viewerBadge"] {
-        display: none !important;
-    }
+    /* This targets the specific 'Made with Streamlit' floating button */
+    div[class^="st-emotion-cache-"] + div[class^="viewerBadge"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
 
-    /* 4. CLEAN THE SIDEBAR MENU (Keep only Theme/Settings) */
-    /* Hides 'Manage app', 'View source', and 'Report a bug' */
-    ul[data-testid="main-menu-list"] li:nth-last-child(-n+4) {
-        display: none !important;
-    }
-    div[data-testid="stConnectionStatus"] {
-        display: none !important;
-    }
-    [data-testid="stSidebarNav"] + div {
-        display: none !important;
-    }
+    /* 2. HIDE GITHUB & FORK BUTTONS (Keep Header for Menu) */
+    /* This hides the GitHub link and Fork button in the top right header */
+    [data-testid="stHeaderActionElements"] {display: none !important;}
+    .stApp a[href*="github.com"] {display: none !important;}
 
-    /* 5. BRING BACK THE MENU BUTTON MANUALLY */
-    /* Since we hid the header, we move the menu button so you can still switch themes */
-    #MainMenu {
-        visibility: visible !important;
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000000;
-    }
+    /* 3. CLEAN UP THE HAMBURGER MENU */
+    /* Hides 'Manage app', 'View source', and 'Report a bug' sections */
+    ul[data-testid="main-menu-list"] li:nth-last-child(-n+3) {display: none !important;}
+    div[data-testid="stConnectionStatus"] {display: none !important;}
+    [data-testid="stSidebarNav"] + div {display: none !important;}
 
-    /* Your Theme Styles */
+    /* 4. KEEP MENU VISIBLE FOR THEME SWITCHING */
+    #MainMenu {visibility: visible !important;}
+
+    /* 5. YOUR THEME STYLES */
     .stApp { background-color: transparent; }
     [data-testid="stSidebar"] { background-color: #111b21 !important; }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label, 
