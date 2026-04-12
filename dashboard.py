@@ -53,28 +53,27 @@ st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.
 st.markdown("""
     <style>
             
+        /* 1. COMPLETELY HIDE HEADER (Top Bar) */
     header[data-testid="stHeader"] {
-    display: none !important;
+        visibility: hidden;
+        height: 0%;
     }
 
-    /* 2. HIDE ENTIRE FOOTER & "MADE WITH STREAMLIT" */
+    /* 2. COMPLETELY HIDE FOOTER & "MADE WITH STREAMLIT" */
     footer {
-        display: none !important;
+        visibility: hidden;
     }
-
-    /* 3. REMOVE PADDING AT THE TOP (Since header is gone) */
+    
+    /* 3. REMOVE TOP PADDING (Fixes the blank gap at the top) */
     .main .block-container {
         padding-top: 0rem !important;
     }
-            
-    /* 1. HIDE FOOTER & BRANDING */
-    footer {visibility: hidden !important; height: 0px !important;}
-    [data-testid="stFooter"], div[class^="viewerBadge"] {display: none !important;}
-    
-    /* 2. HIDE GITHUB/FORK ICONS */
-    [data-testid="stHeaderActionElements"], .stDeployButton {display: none !important;}
-    header a[href*="github"] {display: none !important;}
 
+    /* 4. HIDE MANAGE APP BADGE (For Streamlit Cloud) */
+    div[data-testid="stStatusWidget"] {
+        visibility: hidden;
+    }
+            
     /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
     /* Target only sidebar labels/markdown to be white */
     [data-testid="stSidebar"] .stMarkdown, 
