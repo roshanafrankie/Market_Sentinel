@@ -52,10 +52,21 @@ st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.
 
 st.markdown("""
     <style>
-    .stDeployButton {
-            visibility: hidden;
-        }
-)
+            
+    header[data-testid="stHeader"] {
+    display: none !important;
+    }
+
+    /* 2. HIDE ENTIRE FOOTER & "MADE WITH STREAMLIT" */
+    footer {
+        display: none !important;
+    }
+
+    /* 3. REMOVE PADDING AT THE TOP (Since header is gone) */
+    .main .block-container {
+        padding-top: 0rem !important;
+    }
+            
     /* 1. HIDE FOOTER & BRANDING */
     footer {visibility: hidden !important; height: 0px !important;}
     [data-testid="stFooter"], div[class^="viewerBadge"] {display: none !important;}
