@@ -52,6 +52,10 @@ st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.
 
 st.markdown("""
     <style>
+    .stDeployButton {
+            visibility: hidden;
+        }
+)
     /* 1. HIDE FOOTER & BRANDING */
     footer {visibility: hidden !important; height: 0px !important;}
     [data-testid="stFooter"], div[class^="viewerBadge"] {display: none !important;}
