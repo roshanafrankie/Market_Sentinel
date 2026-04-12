@@ -54,35 +54,7 @@ st.markdown("""
     <style>
             
 <style>
-    /* 1. HIDE USER AVATAR & TOOLBAR (Top Right) */
-    div[data-testid="stToolbar"] {
-        visibility: hidden;
-        height: 0%;
-        display: none !important;
-    }
-
-    /* 2. HIDE DEPLOY & STATUS WIDGETS (Where the GitHub info sits) */
-    div[data-testid="stStatusWidget"] {
-        visibility: hidden;
-        display: none !important;
-    }
-
-    /* 3. ENSURE HEADER IS GONE (Standard selector) */
-    header[data-testid="stHeader"] {
-        visibility: hidden;
-        display: none !important;
-    }
-
-    /* 4. OPTIONAL: Fix top spacing to use the full screen */
-    .main .block-container {
-        padding-top: 0rem !important;
-    }
-    
-    [data-testid="stStatusWidget"], .stViewerBadge, div[class*="viewerBadge"] {
-    display: none !important;
-    visibility: hidden !important;
-    }
-            
+       
     /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
     /* Target only sidebar labels/markdown to be white */
     [data-testid="stSidebar"] .stMarkdown, 
