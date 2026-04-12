@@ -77,6 +77,11 @@ st.markdown("""
     .main .block-container {
         padding-top: 0rem !important;
     }
+    
+    [data-testid="stStatusWidget"], .stViewerBadge, div[class*="viewerBadge"] {
+    display: none !important;
+    visibility: hidden !important;
+    }
             
     /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
     /* Target only sidebar labels/markdown to be white */
