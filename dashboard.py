@@ -53,25 +53,29 @@ st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.
 st.markdown("""
     <style>
             
-        /* 1. COMPLETELY HIDE HEADER (Top Bar) */
-    header[data-testid="stHeader"] {
+<style>
+    /* 1. HIDE USER AVATAR & TOOLBAR (Top Right) */
+    div[data-testid="stToolbar"] {
         visibility: hidden;
         height: 0%;
+        display: none !important;
     }
 
-    /* 2. COMPLETELY HIDE FOOTER & "MADE WITH STREAMLIT" */
-    footer {
-        visibility: hidden;
-    }
-    
-    /* 3. REMOVE TOP PADDING (Fixes the blank gap at the top) */
-    .main .block-container {
-        padding-top: 0rem !important;
-    }
-
-    /* 4. HIDE MANAGE APP BADGE (For Streamlit Cloud) */
+    /* 2. HIDE DEPLOY & STATUS WIDGETS (Where the GitHub info sits) */
     div[data-testid="stStatusWidget"] {
         visibility: hidden;
+        display: none !important;
+    }
+
+    /* 3. ENSURE HEADER IS GONE (Standard selector) */
+    header[data-testid="stHeader"] {
+        visibility: hidden;
+        display: none !important;
+    }
+
+    /* 4. OPTIONAL: Fix top spacing to use the full screen */
+    .main .block-container {
+        padding-top: 0rem !important;
     }
             
     /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
