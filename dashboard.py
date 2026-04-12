@@ -52,9 +52,14 @@ st.set_page_config(page_title="Market Sentinel", layout="wide", page_icon="logo.
 
 st.markdown("""
     <style>
-            
-<style>
-       
+    /* 1. HIDE FOOTER & BRANDING */
+    footer {visibility: hidden !important; height: 0px !important;}
+    [data-testid="stFooter"], div[class^="viewerBadge"] {display: none !important;}
+    
+    /* 2. HIDE GITHUB/FORK ICONS */
+    [data-testid="stHeaderActionElements"], .stDeployButton {display: none !important;}
+    header a[href*="github"] {display: none !important;}
+
     /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
     /* Target only sidebar labels/markdown to be white */
     [data-testid="stSidebar"] .stMarkdown, 
