@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 import warnings
+from datetime import datetime
 from dotenv import load_dotenv
 
 # --- 1. INITIAL SETUP ---
@@ -20,7 +21,7 @@ def apply_sentiment_style(val):
     except:
         return ''
 
-@st.cache_data
+@st.cache_data(ttl=3600) # Refresh watchlist every hour
 def load_watchlist():
     try:
         df = pd.read_csv('companies.csv')
@@ -29,6 +30,7 @@ def load_watchlist():
         st.error(f"Missing companies.csv: {e}")
         return pd.DataFrame()
 
+@st.cache_data(ttl=600) # Refresh database data every 10 minutes
 def get_data(query):
     """Securely connects to Aiven Cloud MySQL."""
     try:
@@ -60,28 +62,26 @@ st.markdown("""
     [data-testid="stHeaderActionElements"], .stDeployButton {display: none !important;}
     header a[href*="github"] {display: none !important;}
 
-    /* 3. FIX DROPDOWN TEXT VISIBILITY (Light vs Dark) */
-    /* Target only sidebar labels/markdown to be white */
+    /* 3. FIX DROPDOWN TEXT VISIBILITY */
     [data-testid="stSidebar"] .stMarkdown, 
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] p { 
         color: white !important; 
     }
 
-    /* FIX: Allow text INSIDE the box to adapt (Black in Light mode, White in Dark) */
     .stSelectbox div[data-baseweb="select"] div {
         color: inherit !important;
     }
 
-    /* 4. SEAMLESS DROPDOWN BOXES (Fixes the edges pinpointed in images) */
+    /* 4. SEAMLESS DROPDOWN BOXES */
     .stSelectbox div[data-baseweb="select"] {
-        border: 1px solid #4b5563 !important; /* Single clean border */
+        border: 1px solid #4b5563 !important;
         border-radius: 8px !important;
         background-color: transparent !important;
         box-shadow: none !important;
     }
 
-    /* 5. FIX THE DROPDOWN LIST CONTENT (Inside the menu) */
+    /* 5. FIX THE DROPDOWN LIST CONTENT */
     div[data-baseweb="popover"] ul {
         border: 1px solid #4b5563 !important;
     }
@@ -100,15 +100,14 @@ st.markdown("""
 df_watchlist = load_watchlist()
 
 with st.sidebar:
-    # --- LOGO & TITLE ROW ---
+    # LOGO & TITLE
     col_l, col_r = st.columns([1, 4])
     with col_l:
         if os.path.exists("logo.png"): 
             st.image("logo.png", width=45)
         else:
-            st.write("📈") # Fallback if file is missing
+            st.write("📈")
     with col_r:
-        # REMOVED THE SYMBOL HERE
         st.markdown("<h2 style='color:white; margin-top:5px;'>Market Sentinel</h2>", unsafe_allow_html=True)
     
     st.caption("AI Powered Market Intelligence")
@@ -125,9 +124,21 @@ with st.sidebar:
     else:
         selected_view = "Global Overview"
 
+    # --- NEW: MANUAL SYNC BUTTON ---
+    st.sidebar.markdown("<br>" * 10, unsafe_allow_html=True) # Push to bottom
+    if st.sidebar.button("🔄 Sync Live Data", width='stretch'):
+        st.cache_data.clear()
+        st.rerun()
+
 # --- 5. MAIN CONTENT ---
 if selected_view == "Global Overview":
     st.title("🌍 Global Market Intelligence")
+    
+    # Check database health
+    db_check = get_data("SELECT MAX(published_at) as last_update FROM news")
+    if not db_check.empty:
+        st.caption(f"Last Database Update: {db_check['last_update'].iloc[0]}")
+
     c1, c2 = st.columns(2)
     with c1:
         with st.container(border=True):
@@ -157,38 +168,31 @@ else:
         stock_name = stock_info['name'].iloc[0]
         st.title(f"🔍 {stock_name} Intelligence")
 
-        # 1. FETCH ALL DATA FIRST
+        # 1. FETCH DATA
         price_query = f"SELECT * FROM (SELECT trade_date, close_price FROM stocks_daily WHERE symbol = '{selected_view}' ORDER BY trade_date DESC LIMIT 10) AS sub ORDER BY trade_date ASC"
         price_data = get_data(price_query)
         
-        # Calculate Average Sentiment for the Metric
         sent_query = f"SELECT sentiment_score FROM news WHERE title LIKE '%{selected_view}%' OR title LIKE '%{stock_name}%' LIMIT 20"
         sent_df = get_data(sent_query)
         avg_s = sent_df['sentiment_score'].mean() if not sent_df.empty else 0
         
-        # 2. RENDER METRICS ROW
+        # 2. RENDER METRICS
         if not price_data.empty:
             latest = price_data['close_price'].iloc[-1]
             prev_close = price_data['close_price'].iloc[-2] if len(price_data) > 1 else latest
             delta = float(latest - prev_close)
             
-            # Create 3 columns for the metrics
             m1, m2, m3 = st.columns(3)
-            
             with m1:
                 st.metric("Current Price", f"${latest:,.2f}", f"{delta:+.2f}")
-            
             with m2:
-                # AI Sentiment Metric
                 sentiment_label = "Bullish" if avg_s > 0.05 else "Bearish" if avg_s < -0.05 else "Neutral"
                 st.metric("AI Sentiment", f"{avg_s:.2f}", sentiment_label)
-            
             with m3:
-                # 10-Day Trend Metric (Calculating if price moved more than 2%)
                 trend_status = "Volatile" if abs(delta) > (latest * 0.02) else "Stable"
                 st.metric("10-Day Trend", trend_status)
 
-            # 3. PRICE CHART (Inside a container)
+            # 3. PRICE CHART
             with st.container(border=True):
                 fig_line = px.line(price_data, x='trade_date', y='close_price', markers=True, 
                                  line_shape='spline', color_discrete_sequence=['#4F46E5'])
@@ -218,6 +222,5 @@ else:
                     ))
                     fig_gauge.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
                     st.plotly_chart(fig_gauge, width='stretch')
-                                    
                 else:
                     st.info("N/A")
