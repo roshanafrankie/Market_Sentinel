@@ -31,5 +31,5 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DB: ${{ secrets.MYSQL_DB }}
           MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
-          NEWSDATA_KEY: ${{ secrets.NEWS_API_KEY }}
+          NEWSDATA_KEY: ${{ secrets.NEWSDATA_KEY }}
         run: python main.py
